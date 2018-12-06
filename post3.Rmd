@@ -1,0 +1,63 @@
+---
+title: "post2"
+author: "Hwayoung Jung"
+date: "December 2, 2018"
+output: rmarkdown::github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+dat=read.csv("kc_house_data.csv")
+#excluding unnecessary, irrelevant variables with house price
+dat=dat[,-c(1,2,16,17,18,19)]
+#converting data type as factor for categorical variables
+dat=transform(dat, waterfront=as.factor(waterfront))
+dat=transform(dat, view=as.factor(view))
+dat=transform(dat, condition=as.factor(condition))
+# the scale of price is quite large. The minimum is 75000 and the maximum is 7700000. I will log-transform the dependent variable.
+# We need to be cautious when log transform the data because it would not work for the values equal to 0.
+# In this case, we add 1 as a convention. log(dat+1).
+# But in this data, the price is all above 0, so I just used log(dat)
+sdat=as.data.frame(cbind(log(dat[,1]),scale(dat[,-c(1,7,8,9)],center=T,scale=T),dat[,c(7,8,9)]))#standardizing excluding categorical variable and dependent variable
+#renaming the first column
+colnames(sdat)[1] = "price"
+# x know whether I should standardize, or center
+#splitting into training and test data
+x=sdat[,2:15]
+y=sdat[,1]
+train = sample(1:nrow(x), nrow(x)/2)
+test = (-train)
+#1. forward selection
+library(MASS)
+fit = lm(price~., data=sdat[train,])
+fit_fw = stepAIC(fit, direction="forward") # stepwise selection
+#results
+fit_fw$anova
+#model with the final reduced model
+#the final model contains all variables in the initial model.
+#no variables were selected at all.
+#failed in variable selection using forward selection method.
+#Then, what about backward selection method? Let's try.
+#2. Backward selection
+fit_bw = stepAIC(fit, direction="backward") # stepwise selection
+#results
+fit_bw$anova
+#final models included fewer variables than in initial model.
+#Let's proceed on with the final model
+fit_bw_f=lm(price~bedrooms + bathrooms + sqft_living + sqft_lot + floors + 
+    grade + sqft_above + yr_built + sqft_living15 + sqft_lot15 + 
+    waterfront + view + condition,data=sdat[train,])
+summary(fit_bw_f)
+train_pred=fit_bw_f$fitted.values
+test_pred=predict(fit_bw_f, newdata=sdat[test,])
+train_mse=mean((y[train]-train_pred)^2)#too high  
+test_mse=mean((y[test]-test_pred)^2)#too high
+
+
+```

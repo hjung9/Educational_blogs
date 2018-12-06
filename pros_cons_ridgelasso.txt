@@ -1,0 +1,12 @@
+Pros and Cons
+Advantages
+I Ridge regression can reduce the variance (with an increasing bias)
+? works best in situations where the OLS estimates have high
+variance
+I Can improve predictive performance
+I Works in situations where p < n
+I Mathematically simple computations
+Disadvantages
+I Ridge regression is not able to shrink coefficients to exactly zero
+I As a result, it cannot perform variable selection
+? Alternative: Least Absolute Shrinkage and Selection Operator (LASSO)
