@@ -1,5 +1,5 @@
 ---
-title: "post2"
+title: "post3"
 author: "Hwayoung Jung"
 date: "December 2, 2018"
 output: rmarkdown::github_document
@@ -13,7 +13,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r}
-dat=read.csv("kc_house_data.csv")
+#rational to choose the zipcode 98006: This dataset only contains variables about features of house itself (such as #of room, area of specific place in the house etc..). Since house price is also subject to change according to external traits such as population of a city. For example, house price cannot be compared between san francisco and ohio.
+#to remove the effect of location, I selected just one zipcode randomly, 98006.
+#dat=read.csv("kc_house_data.csv")
+dat=read.csv("kc_house_data_small.csv")
 #excluding unnecessary, irrelevant variables with house price
 dat=dat[,-c(1,2,16,17,18,19)]
 #converting data type as factor for categorical variables
@@ -36,6 +39,17 @@ test = (-train)
 #1. forward selection
 library(MASS)
 fit = lm(price~., data=sdat[train,])
+#explain stepAIC function.
+#Model selection criteria
+```
+Why we need model selection criteria?
+R^2 "blindly" increases with the nubmer of independent varialbes regardless if each of the varialbe contribute to predicting dependent variable
+Need to set up a criteria to select only variables that actually contribute to predict the dependent variable.
+AIC, BIC
+2 parts: ___, penalty for including more variable
+Smaller criteria is better
+BIC has stronger penalty than AIC, which results in more parsimonious model.
+```{r}
 fit_fw = stepAIC(fit, direction="forward") # stepwise selection
 #results
 fit_fw$anova
@@ -50,14 +64,38 @@ fit_bw = stepAIC(fit, direction="backward") # stepwise selection
 fit_bw$anova
 #final models included fewer variables than in initial model.
 #Let's proceed on with the final model
-fit_bw_f=lm(price~bedrooms + bathrooms + sqft_living + sqft_lot + floors + 
-    grade + sqft_above + yr_built + sqft_living15 + sqft_lot15 + 
-    waterfront + view + condition,data=sdat[train,])
+fit_bw_f=lm(price~sqft_living + sqft_lot + grade + sqft_above + sqft_living15 +sqft_lot15 + waterfront + view + condition,data=sdat[train,])
 summary(fit_bw_f)
 train_pred=fit_bw_f$fitted.values
 test_pred=predict(fit_bw_f, newdata=sdat[test,])
-train_mse=mean((y[train]-train_pred)^2)#too high  
-test_mse=mean((y[test]-test_pred)^2)#too high
+train_mse=mean((y[train]-train_pred)^2)  
+test_mse=mean((y[test]-test_pred)^2)
+#Notice the Final reduced model of backward selection still contains so many variables.
+#Let's see if the variable selection option, "both" with BIC criteria produce more parsimonious final models with fewer variables.
 
 
+
+#by choosing k=log(the number of rows in data), we can set the criteria as BIC.
+#by default, the k=2, which is meant for AIC criteria
+fit_fb = stepAIC(fit, direction="both",k = log(nrow(sdat[train,])))
+fit_fb$anova
+#Notice this method effectively selected variables. Only 5 variables in this model.
+fit_fb_f=lm(price~sqft_living + grade + sqft_living15 + waterfront + condition,data=sdat[train,])
+summary(fit_fb_f)
+train_pred=fit_fb_f$fitted.values
+test_pred=predict(fit_fb_f, newdata=sdat[test,])
+train_mse=mean((y[train]-train_pred)^2)  
+test_mse=mean((y[test]-test_pred)^2)
+
+#check if 2-way interactions also exist
+#fit_fb_f1=lm(price~sqft_living + grade + sqft_living15 + waterfront + condition + #sqft_living*grade,data=sdat[train,])
+#fit_fb_f1$anova
+
+#Among model selection criteria, BIC is better option than AIC for parsimonious model because BIC choose fewer number of variables.
+#library(leaps)
+#library(car)
+#fit_bs=regsubsets(x[train,],y[train],nbest=1,nvmax=10)# R session keeps aborting
+#summary(fit_bs)
+#plot(fit_bs,"scale=BIC")
+#BIC(fit_bs)
 ```
