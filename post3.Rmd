@@ -10,8 +10,35 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+1. Purpose 
+In this post, I will show how to build a model with variable selection methods using stepwise selection. I will generate models to predict important factors associated with house price.
+Variables are ---.
+The dataset is obtained from kaggle.
+The original dataset includes __ rows and __ columns.
+To make the prediction more meaningful, I have selected rows and columns.
+For rows, I only chose rows of which the zipcode is 98006. This dataset only contains variables about features of house itself (such as #of room, area of specific place in the house etc..). Since house price is also subject to change according to external traits such as population of a city and development of public transportation and so on. In this sense, house price cannot be compared between san francisco and ohio. Hence, to remove the effect of location, I randomly selected just one zipcode 98006.
+For columns, I excluded unnecessary, irrelevant variables with house price.
 
+2. Overview of analysis techniques
+Stepwise selection
+equation here: Y=beta 0+B1X1+..
+This is a typical multiple regression form, whre X1~Xp are variables and Beta1~Betap are coefficients of each variable, beta0 is an intercept, e is an error term. It might be tempting to include as many variables as possible to consider many factors that would explain the dependent variable. Indeed, R^2 will increase as you include more variables in a model. But will all the variables actually contribute in predicting the dependent variable? The problem of R^2 is that it blindly increases regardless actual contribution of variables. That means, even if you include any irrelevant variable, R^2 still increases. There are several model selection criteria to handle this issue: AIC, BIC, Cp and adjusted R^2. Among these, AIC is most frequently used.
+AIC=
+BIC=
 
+Since penalty of BIC is larger, it results in producing a more parsimonious model that includes fewer number of variables.
+
+Using the model selection criteria shown above, we can conduct stepwise model selection. There are mainly 3 ways- forward, backward and bidirectional selection.
+The method is called 'stepwise' because it adds/removes a single variable at a time.
+
+Forward stepwise model starts fitting a null model that does not include any variables first, then add one variable at a time until all variables are included.
+Backward stepwisse model starts from a full model that includes all variables, then remove one least significantly contributing variable at a time until all variables are included.
+Bidirectional selection is a combination of forward and backward selection. The constraints of forward and backward selection is that, once variables are included, the change cannot be reversed. For example, in backward selection, if a variable is removed, then the removed variable cannot be included in the model later. In forward selection, if a variable is added, it cannot be removed. But the bidirectional selection flexibly remove a variable that was previously added and add a variable that was previously removed if the previous change does not improve the fitness of the model which is checked by model criteria value (AIC, BIC ..etc).
+
+Pros cons of the model
+
+Even though I excluded some variables, there are still _ variables so it needs to go further selection process to make more simpler, accurate model.
+In the following analysis, I will use forward, backward and bidirectinoal selection model with different model selection criteria.
 ```{r}
 #rational to choose the zipcode 98006: This dataset only contains variables about features of house itself (such as #of room, area of specific place in the house etc..). Since house price is also subject to change according to external traits such as population of a city. For example, house price cannot be compared between san francisco and ohio.
 #to remove the effect of location, I selected just one zipcode randomly, 98006.

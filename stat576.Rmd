@@ -21,7 +21,6 @@ The purpose of this post is to show 1) how to examine factors associated with eg
 - Bill: length of bill (mm), continuous variable
 - Wing: length of wing span (mm), continuous variable 
 - Tail: Length of tail feather (mm), continuous variable
-- Temperature: averaged temperature of 4 days before the date of laying eggs
 - ld: Date of egg laying. 0 means the first date of egg laying and the other number means the number of days passed from the first date of egg laying (0). Continuous variable.
 - cs: Clutch size, which means the number of eggs in a nest. On average, the birds lay 5 eggs but sometimes lay 4 or 6 eggs. There are only three values in this measurement, 4,5 and 6, so it is close to categorical variable.
 - weight: Averaged weight of the eggs in a nest. (g). continuous variable
@@ -46,6 +45,10 @@ Both ridge and lasso regression have a tuning parameter called lambda, which is 
 Ridge regression is an improved version of ordinary least square analysis. When lambda equals to 0, it is exactly the same analysis with ordinary least square. As the lambda increases, the shrinkage penalty increases, and coefficient estimates get closer to zero. One thing to note is that, even though the coefficients reduces toward zero, these do not reach to actual zero. That means all independent variables will be included no matter how high the lambda is.
 
 Lasso regression works also similarly with ordinary least square analysis. The main difference with ridge regression is that it use l2 norm and lasso regression is based on l1 norm. l2 norm means the squared value and l1 norm means the absolute value that without being squared. 
+
+Elastic net is like an intermediate form between ridge and lasso because it combines ridge and lasso penalties together. Lasso rigression tends to select too small number of variables if they were highly correlated and do not produce the same variable selection. Elastic net effectively deals with this problem by considering penalties of ridge and lasso. 
+(insert plot here)
+l1 part select few number of variables and quadratic part stabilizes l1 part
 
 4. Pros and cons of each method
 If all variables contribute to the prediction of dependent variable, then ridge regression works better, whereas if only some variables contribute, then lasso regression is appropriate.
@@ -96,22 +99,59 @@ train_mse=mean((y[train]-predicted_tr)^2)
 test_mse=mean((y[test]-predicted_ts)^2)
 
 ```
+
+```
 5. Now let's perform lasso regression. Since we already divided the data with training and test set, we will start from cross validation to choose the best lambda.
+
+
 ```{r}
 #cross validation for lambda to choose the best lambda. For lasso regression, we choose alpha as 1.
 cvfitl=cv.glmnet(x[train,],y[train],alpha=1)
 plot(cvfitl)
 l.min=cvfitl$lambda.min #this is the best lambda
 ```
-#fitting the Ridge regression with the best lambda 
+fitting the Ridge regression with the best lambda 
 ```{r}
 predicted_tr=predict(cvfitl,newx=x[train,],s=l.min)
 predicted_ts=predict(cvfitl,newx=x[test,],s=l.min)
+```
+comparing MSE between train and test dataset to examine overfitting
+```{r}
+train_mse=mean((y[train]-predicted_tr)^2)
+test_mse=mean((y[test]-predicted_ts)^2)
+```
+5. Now let's perform elastic net regression. Since we already divided the data with training and test set, we will start from cross validation to choose the best lambda.
+```{r}
+#cross validation for lambda to choose the best lambda. For elastic net regression, we choose alpha as 0.5.
+cvfite=cv.glmnet(x[train,],y[train],alpha=0.5)
+e.min=cvfite$lambda.min #this is the best lambda
+```
+#fitting the elastic net regression with the best lambda 
+```{r}
+predicted_tr=predict(cvfite,newx=x[train,],s=e.min)
+predicted_ts=predict(cvfite,newx=x[test,],s=e.min)
 ```
 #	comparing MSE between train and test dataset to examine overfitting
 ```{r}
 train_mse=mean((y[train]-predicted_tr)^2)
 test_mse=mean((y[test]-predicted_ts)^2)
 
+#solution path
+Solution path is a useful visualization that shows important variables in the model.
+X axis is lambda that is log transformed to alleviate drastic change in the plot, Y axis is coefficients of each variable. As log lambda increases, all coefficients get closer to zero, but the order for variables to get close to zero is different. Most important variable should reach most lately and as the variables of lower importance get to zero earlier.
+#ridge
+fitr=glmnet(x=x[train,],y=y[train],alpha=0)
+plot(fitr,xvar="lambda", col=1:8, main="Ridge regression solution path")#Lasso regularization paths across log lambda
+legend("bottomright",legend=names(dat)[1:8],col=1:8,lty=rep(1,8),cex=0.6)
+#lasso
+fitl=glmnet(x=x[train,],y=y[train],alpha=1)
+plot(fitl,xvar="lambda", col=1:8)#Lasso regularization paths across log lambda
+legend("bottomright",legend=names(dat)[1:8],col=1:8,lty=rep(1,8),cex=0.6)
+#elastic net
+fite=glmnet(x=x[train,],y=y[train],alpha=0.5)
+plot(fite,xvar="lambda", col=1:8)#Lasso regularization paths across log lambda
+legend("bottomright",legend=names(dat)[1:8],col=1:8,lty=rep(1,8),cex=0.6)
 ```
-Now let's look at the solution paths to determine which variables are salient in predicting the dependent variable.
+
+As a result, the top 3 important variables in ridge regression turned out to be cs, Bill and length,
+length, ld and Bill in lasso, length, tail and ld in elastic net.

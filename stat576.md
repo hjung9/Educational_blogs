@@ -123,7 +123,7 @@ train_mse=mean((y[train]-predicted_tr)^2)
 test_mse=mean((y[test]-predicted_ts)^2)
 ```
 
-1.  Now let's perform lasso regression. Since we already divided the data with training and test set, we will start from cross validation to choose the best lambda.
+\`\`\` 5. Now let's perform lasso regression. Since we already divided the data with training and test set, we will start from cross validation to choose the best lambda.
 
 ``` r
 #cross validation for lambda to choose the best lambda. For lasso regression, we choose alpha as 1.
@@ -138,11 +138,33 @@ l.min=cvfitl$lambda.min #this is the best lambda
 ```
 
 fitting the Ridge regression with the best lambda
-=================================================
 
 ``` r
 predicted_tr=predict(cvfitl,newx=x[train,],s=l.min)
 predicted_ts=predict(cvfitl,newx=x[test,],s=l.min)
+```
+
+comparing MSE between train and test dataset to examine overfitting
+
+``` r
+train_mse=mean((y[train]-predicted_tr)^2)
+test_mse=mean((y[test]-predicted_ts)^2)
+```
+
+1.  Now let's perform elastic net regression. Since we already divided the data with training and test set, we will start from cross validation to choose the best lambda.
+
+``` r
+#cross validation for lambda to choose the best lambda. For elastic net regression, we choose alpha as 0.5.
+cvfite=cv.glmnet(x[train,],y[train],alpha=0.5)
+e.min=cvfite$lambda.min #this is the best lambda
+```
+
+fitting the elastic net regression with the best lambda
+=======================================================
+
+``` r
+predicted_tr=predict(cvfite,newx=x[train,],s=e.min)
+predicted_ts=predict(cvfite,newx=x[test,],s=e.min)
 ```
 
 comparing MSE between train and test dataset to examine overfitting
@@ -151,6 +173,30 @@ comparing MSE between train and test dataset to examine overfitting
 ``` r
 train_mse=mean((y[train]-predicted_tr)^2)
 test_mse=mean((y[test]-predicted_ts)^2)
+
+#solution path
+#ridge
+fitr=glmnet(x=x[train,],y=y[train],alpha=0)
+plot(fitr,xvar="lambda", col=1:8)#Lasso regularization paths across log lambda
+legend("bottomright",legend=names(dat)[1:8],col=1:8,lty=rep(1,8),cex=0.6)
 ```
 
-Now let's look at the solution paths to determine which variables are salient in predicting the dependent variable.
+![](README_figs/README-unnamed-chunk-13-1.png)
+
+``` r
+#lasso
+fitl=glmnet(x=x[train,],y=y[train],alpha=1)
+plot(fitl,xvar="lambda", col=1:8)#Lasso regularization paths across log lambda
+legend("bottomright",legend=names(dat)[1:8],col=1:8,lty=rep(1,8),cex=0.6)
+```
+
+![](README_figs/README-unnamed-chunk-13-2.png)
+
+``` r
+#elastic net
+fite=glmnet(x=x[train,],y=y[train],alpha=0.5)
+plot(fite,xvar="lambda", col=1:8)#Lasso regularization paths across log lambda
+legend("bottomright",legend=names(dat)[1:8],col=1:8,lty=rep(1,8),cex=0.6)
+```
+
+![](README_figs/README-unnamed-chunk-13-3.png) Now let's look at the solution paths to determine which variables are salient in predicting the dependent variable.
