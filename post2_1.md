@@ -320,6 +320,9 @@ ggplot(dat,aes(x=dat$threat,y=dat[,5],fill=dat$threat))+
   theme(legend.position="none")
 ```
 
-![](post2_1_files/figure-markdown_github/unnamed-chunk-11-2.png) \#\#5. Conclusion
+![](post2_1_files/figure-markdown_github/unnamed-chunk-11-2.png)
+
+5. Conclusion
+-------------
 
 conclusions: As the birds are in the highest level of threat, they tended to produce calls with louder decibels and longer duration. Among 4 kinds of cluster models, K-means applied on the raw data showed the highest prediction accuracy.

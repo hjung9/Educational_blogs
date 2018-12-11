@@ -1,0 +1,318 @@
+---
+title: "post3"
+author: "Hwayoung Jung"
+date: "December 2, 2018"
+output: rmarkdown::github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+##1. Purpose 
+
+
+In this post, I will show how to build a model with variable selection methods using stepwise selection. I will generate models to predict important factors associated with house price.
+Variables are shown below:
+
+- id: an identical number labeled for each house
+
+- date: Date of the house was sold
+
+- price: The house price (Dependent variable)
+
+- bedrooms: The number of bedroons in the house
+
+- bathrooms: The number of bathrooms divided by the number of bedrooms
+
+- sqft_living: area of the house in square ft.
+
+- sqft_lot: area of the house lot in square ft.
+
+- floors: The number of total floors in the house.
+
+- waterfront: Whether the house is built near waterfront for view
+
+- view: Whether or not it has been viewed by other people
+
+- condition: Overall condition of the house
+
+- grade: overall grade of the house using "King County grading system"
+
+- sqft_above: Area of the house from basement in square ft.
+
+- sqft_basement: Area of the basement in square ft.
+
+- yr_built: Years of the house was built
+
+- yr_renovated: Year of the house renovation
+
+- zipcode: zipcode of the address of the house
+
+- lat: Latitude of the house
+
+- long: longitude of the house
+
+- sqft_living15: Area of livingroom in 2015
+
+- sqft_lot15: Area of lot in 2015
+
+The dataset is obtained from kaggle. (https://www.kaggle.com/harlfoxem/housesalesprediction).
+
+
+
+## 2. Overview of analysis techniques
+
+# 2.1 Model selection criteria
+
+![alt text here](https://github.com/hjung9/STAT576_1/blob/master/post3_1.png)
+
+This is a typical multiple regression form, whre X1~Xp are variables and Beta1~Betap are coefficients of each variable, beta0 is an intercept, e is an error term. It might be tempting to include as many variables as possible to consider many factors that would explain the dependent variable. Indeed, R^2 will increase as you include more variables in a model. But will all the variables actually contribute in predicting the dependent variable? The problem of R^2 is that it blindly increases regardless actual contribution of variables. That means, even if you include any irrelevant variable, R^2 still increases. There are several model selection criteria to handle this issue: AIC, BIC, Cp and adjusted R^2. Among these, AIC is most frequently used.
+
+![alt text here](https://github.com/hjung9/STAT576_1/blob/master/post_3_2AICBIC.png)
+
+Both AIC and BIC have the similar structure- combining measurement of prediction accuracy and penalty for increasing complexity of the model, which increases as the number of variable increases. n is the number of variable and m represents the sample size.
+Unlike AIC that just subtract n from the prediction accuracy measuremnt, BIC considers both the number of variables and the sample size, usually resulting in higher penatly for including more variables. The smaller the criteria, the better.
+
+Using the model selection criteria shown above, we can conduct stepwise model selection. There are mainly 3 ways: forward, backward and mixed selection.
+The method is called 'stepwise' because it adds/removes a single variable at a time.
+
+
+#2.2 Forward stepwise model
+
+- Forward stepwise model starts fitting a null model that does not include any variables first, then add one variable at a time until all variables are included.
+
+#2.3 Backward stepwise model
+
+- Backward stepwisse model starts from a full model that includes all variables, then remove one least significantly contributing variable at a time until all variables are included.
+
+#2.4 Mixed stepwise model
+
+- Mixed selection is a combination of forward and backward selection. The constraints of forward and backward selection is that, once variables are included, the change cannot be reversed. For example, in backward selection, if a variable is removed, then the removed variable cannot be included in the model later. In forward selection, if a variable is added, it cannot be removed. But the bidirectional selection flexibly remove a variable that was previously added and add a variable that was previously removed if the previous change does not improve the fitness of the model which is checked by model criteria value (AIC, BIC ..etc).
+
+##3. Pros cons of the model
+
+Advantages:
+- Computationally efficient and fast
+- Easy to interprete with smaller number of variables included in the final model
+
+Disadvantages:
+- P-values do not provide meaningful information because of the bias
+- Not efficient in dealing with variables with high collinearity. It will just randomly remove one variable among highly correlated variables.
+
+
+Even though I excluded some variables, there are still 13 variables so it needs to go further selection process to make more simpler, accurate model.
+In the following analysis, I will use forward, backward and bidirectinoal selection model with different model selection criteria.
+
+
+##4. Data analysis
+
+#4.1 Pre-processing
+
+```{r}
+dat=read.csv("kc_house_data.csv")
+dim(dat)
+```
+
+The original dataset includes 21613 rows and 21 columns.
+To make the prediction more meaningful, I have selected some rows and columns to include for data analysis.
+For rows, I only chose rows of which the zipcode is 98006. This dataset only contains variables about features of house itself (such as #of room, area of specific place in the house etc..). Since house price is also subject to change according to external traits such as population of a city and development of public transportation and so on. For example, house price cannot be compared between san francisco in CA and Knoxville in TN. Hence, to remove the effect of location, I randomly selected just one zipcode, 98006. 
+
+```{r}
+dat = subset(dat, zipcode=="98006")
+head(dat)
+```
+
+For columns, I excluded unnecessary, irrelevant variables with house price, such as id, date, zipcode, latitude and longitude.
+Also excluded the yr_renovated because it contained too many 0s and didn't seem to be meaningful to include it.
+
+```{r}
+#excluding unnecessary, irrelevant variables with house price
+dat=dat[,-c(1,2,16,17,18,19)]
+```
+
+I will covert variable waterfront, view and condition because they are categorical variables.
+For remaining independent variables, I will standardize those because they are in different units.
+
+```{r}
+#converting data type as factor for categorical variables
+dat=transform(dat, waterfront=as.factor(waterfront))
+dat=transform(dat, view=as.factor(view))
+dat=transform(dat, condition=as.factor(condition))
+```
+
+The scale of price is quite large. The minimum is 75000 and the maximum is 7700000. I will log-transform the dependent variable, rather than scaling it.
+For log-transformation, generally We need to be cautious because it would not work for the values equal to 0.
+In this case, we add 1 as a convention. log(dat+1).
+
+But in this data, the price is all above 0, so I just used log(dat)
+
+```{r}
+sdat=as.data.frame(cbind(log(dat[,1]),scale(dat[,-c(1,7,8,9)],center=T,scale=T),dat[,c(7,8,9)]))#standardizing excluding categorical variable and dependent variable
+#renaming the first column
+colnames(sdat)[1] = "price"
+```
+Then I will split the data into half training and half test data.
+```{r}
+#splitting into training and test data
+x=sdat[,2:15]
+y=sdat[,1]
+train = sample(1:nrow(x), nrow(x)/2)
+test = (-train)
+```
+
+
+# 4.2 Forward selection model
+
+Now we are ready to run forward, backward and mixed stepwise selection models.
+Let's get started with forward selection model.
+
+```{r}
+#1. forward selection
+library(MASS)
+fit = lm(price~., data=sdat[train,])
+#explain stepAIC function.
+#Model selection criteria
+```
+
+Using stepAIC function automatically adds variables step by step. 
+To see the results, use object_name_of_model$anova
+```{r}
+fit_fw = stepAIC(fit, direction="forward") # stepwise selection
+#results
+fit_fw$anova
+```
+
+This shows the final model of forward selection, but here is a problem.
+The final model contains all variables in the initial model and
+no variables were selected at all.
+
+
+#4.3 Backward selection model
+
+Then, what about backward selection method? Let's try.
+```{r}
+fit_bw = stepAIC(fit, direction="backward") # stepwise selection
+fit_bw$anova
+```
+
+Final models included fewer variables than in initial model.
+Let's proceed on with the final model
+```{r}
+
+fit_bw_f=lm(price~sqft_living + sqft_lot + grade + sqft_above + sqft_living15 +sqft_lot15 + waterfront + view + condition,data=sdat[train,])
+summary(fit_bw_f)
+
+```
+
+Notice the Final reduced model of backward selection still contains so many variables.
+
+#4.4 Mixed selection model
+
+Let's see if the variable selection option, "both" with BIC criteria produce more parsimonious final models with fewer variables.
+To select BIC as a model selection criteria, set k=log(the number of rows in data) in the stepAIC function. (By default, the k=2, which is meant for AIC criteria)
+
+```{r}
+
+fit_fb = stepAIC(fit, direction="both",k = log(nrow(sdat[train,])))
+fit_fb$anova
+
+fit_fb_f=lm(price~sqft_living + grade + sqft_living15 + waterfront + condition,data=sdat[train,])
+summary(fit_fb_f)
+
+coef(fit_fb)
+```
+
+Notice this method effectively selected variables. Only 5 variables in this model.
+In the backward selection model, sqft_living, sqft_lot, grade, sqft_above, sqft_living15 , sqft_lot15, waterfront, view and condition were selected.
+In the mixed model, sqft_living, grade, sqft_living15, waterfront and condition were selected, which all overlap with the variables selected in the backward selection model.
+By using coef(), we can see the coefficients of each variable.
+In the final model with BIC, waterfront shows the heighest value, followed by view of level 4th. 
+
+```{r}
+train_mse1=NA  #1. Forward training MSE
+train_mse2=NA  #2. Backward training MSE
+train_mse3=NA  #3. Mixed training MSE
+
+test_mse1=NA  #1. Forward test MSE
+test_mse2=NA  #2. Backward test MSE
+test_mse3=NA  #3. Mixed test MSE 
+
+errmat=matrix(0,20,6)
+for(i in 1:20){
+# Splitting into training and test dataset
+train = sample(1:nrow(x), nrow(x)/2)
+test = (-train)
+# forward selection
+
+fit_fw = lm(price~.,data=sdat[train,])
+
+train_pred=fit_fw$fitted.values
+test_pred=predict(fit_fw, newx=sdat[test,])
+
+train_mse1=mean((y[train]-train_pred)^2) 
+test_mse1=mean((y[test]-test_pred)^2)
+
+fw_err=c(train_mse1,test_mse1)
+
+# backward selection
+
+fit_fb=lm(price~sqft_living + grade + sqft_living15 + waterfront + condition,data=sdat[train,])
+
+train_pred=fit_bw$fitted.values
+test_pred=predict(fit_bw, newx=sdat[test,])
+
+train_mse2=mean((y[train]-train_pred)^2) 
+test_mse2=mean((y[test]-test_pred)^2)
+
+bw_err=c(train_mse2,test_mse2)
+
+# mixed selection
+fit_fb = lm(price~sqft_living + grade + sqft_living15 + waterfront + condition,data=sdat[train,])
+
+train_pred=fit_fb$fitted.values
+test_pred=predict(fit_fb, newx=sdat[test,])
+
+train_mse3=mean((y[train]-train_pred)^2) 
+test_mse3=mean((y[test]-test_pred)^2)
+
+fb_err=c(train_mse3,test_mse3)
+
+errmat[i,] = c(fw_err, bw_err,fb_err)
+}
+
+colnames(errmat) <- c("Fw.Tr","Fw.Ts","Bw.Tr","Bw.Ts","Mx.Tr","Mx.Ts")
+boxplot(errmat,ylab="MSE")
+
+```
+
+For validation of each model, I have calculated mean square error of training and test data of 3 models, respectively.
+Boxplot shows the summarized results.
+
+Fw.Tr: Training MSE of forward selection model
+
+Fw.Ts: Test MSE of forward selection model
+
+Bw.Tr: Training MSE of backward selection model
+
+Bw.Ts: Test MSE of backward selection model
+
+Mx.Tr: Training MSE of mixed selection model
+
+Mx.Ts: Test MSE of mixed selection model
+
+It seems backward selection model is the most reliable in terms of generalization, whereas forward and mixed models show larger difference between training and test MSE.
+
+The actual values of MSE for each models looks like below
+```{r}
+errmat
+```
+
+##5. Conclusion
+
+To conclude, the important factors deciding house price turned out to be whether the house has the view of water front and nice overall view around the house. Therefore, rather than traits of the internal house structure such as area of livingroom, whether the house has a view of water near the house. 
+
+reference of image of AIC/BIC: https://slideplayer.com/slide/10911060/
