@@ -34,7 +34,6 @@ The variables in the dataset are:
 Among the 11 variables, threat will be used as dependent variables and all other variables will be dependent variables.
 
 2. Overview of analysis techniques
-==================================
 
 2.1 Hierarchical clustering
 ===========================
@@ -322,6 +321,5 @@ ggplot(dat,aes(x=dat$threat,y=dat[,5],fill=dat$threat))+
 ![](post2_1_files/figure-markdown_github/unnamed-chunk-11-2.png)
 
 5. Conclusion
-=============
 
 As the birds are in the highest level of threat, they tended to produce calls with louder decibels and longer duration. Among 4 kinds of cluster models, K-means applied on the raw data showed the highest prediction accuracy.
