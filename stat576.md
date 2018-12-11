@@ -4,7 +4,6 @@ Hwayoung Jung
 November 18, 2018
 
 1. Purpose
-==========
 
 The purpose of this post is to show 1) how to examine factors associated with egg weight of a bird species, the Vinous-throated parrotbill. 2) how to compare two methods in prediction accuracy. There are several factors that might contribute to the egg size of the bird shown below with the name of the variables in the dataset. Below is the description on the variables.
 
