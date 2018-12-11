@@ -5,7 +5,8 @@ December 2, 2018
 
 Within-note variation in Tufted titmice (*baeolophus bicolor*)
 
-1.  Purpose
+1. Purpose
+----------
 
 The purpose of this post is to show how to examine presence of hidden subgroup and the subgroups match with a specific group category that is already known. I am studying the vocal behavior of Tufted titmice, commonly found species in Tennessee. The titmice produce various types of calls that convey threat information to other birds to alert them. There are 10 acoustic measurements of the titmice calls and 1 threat context. The goal of the analyses is to examine weather within-note property of D notes are associated with threat level.
 
@@ -33,11 +34,13 @@ The variables in the dataset are:
 
 Among the 11 variables, threat will be used as dependent variables and all other variables will be dependent variables.
 
-1.  Overview of analysis techniques
+2. Overview of analysis techniques
+----------------------------------
 
 2.1 Hierarchical clustering
+===========================
 
-Hierarchical clustering is a technique by which group similar data points together by using hierarchical tree model, a dendrogram. ![alt text here](C:/Users/selly/Google%20Drive/UT/STAT576/STAT576_1/dendrogram.png)
+Hierarchical clustering is a technique by which group similar data points together by using hierarchical tree model, a dendrogram. ![alt text here](https://github.com/hjung9/STAT576_1/blob/master/dendrogram.png)
 
 Dendrogram is a figure that shows how each data point is grouped. Bottom of the plot shows all data points called leaves. They are grouped by clades (branch), and the leaves that are combined in the same height of branch are in the same cluster. Height of the branch indicates more dissimilarity between clusters.
 
@@ -58,6 +61,7 @@ There are 3 ways of measuring distance between clusters.
 Distances between data points are usually calculated with Euclidean distance, but there are many other options such as manhattan, bray-curtis.. etc.
 
 2.2 PCA (Principal Component Analysis)
+======================================
 
 PCA is a technique to reduce dimension by calculating principal components that effectively represent variability with smaller numbers of variables. Normal regression analyses just use the variables themselves, but PCA creates new variables (PCs), each of which consists of original variables by differing intensity and direction.
 
@@ -65,11 +69,12 @@ Suppose there are P variables X1, X2,.., Xp and you want to make scatter plots f
 
 Let's take an example of PC1, the PC that explains the largest variance.
 
-PC1= ![alt text here](C:/Users/selly/Google%20Drive/UT/STAT576/STAT576_1/pc.png)
+PC1= ![alt text here](https://github.com/hjung9/STAT576_1/blob/master/pc.png)
 
 Before running PCA, all variables should be centered or scaled because PCA focuses on variance. Since I am not going to use PCA as a separate method in this posting, and just calculate PCs that are going to be used in K-means clustering, I am not going to show how to interpret results.
 
 2.3 K-means clustering
+======================
 
 K-means clustering aims to divide observations into K clusters that do not overlap to find out data points that have similar traits while minimizing variance of distance among clusters. In other words, it partisions in the way that increase inner similarity of observations in the same cluster. It requires data to take Euclidean distance.
 
@@ -107,7 +112,14 @@ Disadvantage of K-means:
 
 -   It requires prior knowledge of number of K. (But it does not matter in the data I am going to use. You will see below that I am going to use K=3, according to the number of threat levels)
 
-1.  Analsysis 4.1 hierarchical clustering 4.1.2 hierarchical clustering with euclidean distance and complete linkage
+4. Analsysis
+------------
+
+4.1 hierarchical clustering
+===========================
+
+4.1.2 hierarchical clustering with euclidean distance and complete linkage
+==========================================================================
 
 This is the data to be analyzed in this post.
 
@@ -142,16 +154,6 @@ sdat=scale(dat[,2:10])
 #dat[,1] is the dependent variable, that is categorical with 3 threat levels: 10m from human (lowest level of threat, 5m from human-intermediate level of threat, 1m from human-highest level of threat)
 ```
 
-The order of dat\[,1\] is set as 10m,1m and 5m. Let's re-order for easier interpretation.
-
-``` r
-#print(levels(dat[,1]))
-#dat[,1]=factor(dat[,1],levels(dat[,1])[c(1,3,2)])
-#print(levels(dat[,1])) 
-```
-
-Now it is ordered as 10m, 5m and 1m. (From less threat to highest threat level.)
-
 In this post, I will comparing whether clusters match with the 3 threats condition: low (10m), medium (5m) and high (1m), using hierarchical clustering (euclidean distance and complete linkage and euclidan distance with single linkage), and K-means.
 
 Because the number of threat condition is 3, I will fix the number of clusters to be 3 in all methods to match the cluster labels and threat conditions later.
@@ -165,27 +167,31 @@ This is the distance matrix calculated with euclidean distance.
 Now, let's first try fit hierarchical model with complete linkage.
 
 ``` r
+set.seed(400)
 fit_comp = hclust(d, method="complete")
 hc_comp_labels= cutree(fit_comp, k=3)
 plot(fit_comp) # display dendogram
 rect.hclust(fit_comp, k=3, border="red")
 ```
 
-![](post2_1_files/figure-markdown_github/unnamed-chunk-5-1.png)
+![](post2_1_files/figure-markdown_github/unnamed-chunk-4-1.png)
 
 4.1.3 hierarchical clustering with euclidean distance and single linkage
+========================================================================
 
 ``` r
+set.seed(400)
 fit_sing = hclust(d, method="single")
 hc_sing_labels= cutree(fit_sing, k=3)
 plot(fit_sing)
 ```
 
-![](post2_1_files/figure-markdown_github/unnamed-chunk-6-1.png) It does not seem like an appropriate method to classify 3 threat levels by looking at the dendrogram.
+![](post2_1_files/figure-markdown_github/unnamed-chunk-5-1.png) It does not seem like an appropriate method to classify 3 threat levels by looking at the dendrogram.
 
 Now, let's try K-means with principal component axis.
 
 4.2.1 Kmeans with Principal component axis
+==========================================
 
 By using prcomp() function, we can extract PC1, PC2 and PC3.
 
@@ -195,35 +201,39 @@ pcs1to3=data.frame(pcs$x[,1:3])#extract PC1 to PC3
 plot(pcs1to3)
 ```
 
-![](post2_1_files/figure-markdown_github/unnamed-chunk-7-1.png)
+![](post2_1_files/figure-markdown_github/unnamed-chunk-6-1.png)
 
 This is pairwise plot of PC axis. In the next step, I will run K-means with the PC axis extracted above
 
 ``` r
+set.seed(400)
 fit_km_pc=kmeans(pcs1to3,3)
 km_pc_labels=fit_km_pc$cluster
 plot(pcs1to3,col=fit_km_pc$cluster)
 ```
 
-![](post2_1_files/figure-markdown_github/unnamed-chunk-8-1.png)
+![](post2_1_files/figure-markdown_github/unnamed-chunk-7-1.png)
 
 It seems clusters in PC1 and PC2 show good separation.
 
 Next, let's see K-means fitted on the raw data, instead of PC axis. Of course, raw data has more variables than PC axis, so the pairwise plot should include much more plots.
 
 4.2.2 K-means with Raw data
+===========================
 
 ``` r
+set.seed(400)
 fit_km_r=kmeans(sdat,3)
 km_r_labels=fit_km_r$cluster
 plot(dat,col=fit_km_r$cluster)
 ```
 
-![](post2_1_files/figure-markdown_github/unnamed-chunk-9-1.png)
+![](post2_1_files/figure-markdown_github/unnamed-chunk-8-1.png)
 
 Overall, it does not show clear clustering showed above in the K-means with PC axis. Also, the 1m(green) and 5m (red) tended to be separated, while 10m (black) was mixed into other clusters. Duration, RMS and entropy seemed to separates clusters better than other variables. Will this turns out to be true? We will look prediction accuracy using confusion matrix shown below.
 
 4.3 Prediction accuracy of 4 methods above
+==========================================
 
 So far, we performed 2 hierarchical clustering and K-means analysis combined with PCA and applied on raw data. With the clusters obtained in the previous section, we will going to match with actual dependent variable, threat levels to see how accurately the clusters are divided, by using confusion matrix.
 
@@ -253,9 +263,9 @@ table(km_pc_labels,dat[,1])#confusion matrix of K-means with PC
 
     ##             
     ## km_pc_labels a_10m b_5m c_1m
-    ##            1    39   86    1
-    ##            2     0    5   44
-    ##            3     0    7  233
+    ##            1     0   14  235
+    ##            2     0    4   43
+    ##            3    39   80    0
 
 ``` r
 table(km_r_labels,dat[,1])#confusion matrix of K-means analysis on raw data
@@ -263,13 +273,21 @@ table(km_r_labels,dat[,1])#confusion matrix of K-means analysis on raw data
 
     ##            
     ## km_r_labels a_10m b_5m c_1m
-    ##           1    39   82    0
-    ##           2     0    4   41
-    ##           3     0   12  237
+    ##           1     0    4   41
+    ##           2    39   90    1
+    ##           3     0    4  236
 
 It seems that k-means with raw data showed the most high accuracy. Particularly, it predicted 1m (high threat) pretty well. Hierarchical clustering with complete linkage showed less high accuracy, but hiearchical clustering with single linkage and K-means with PC axis showed the least accurate results.
 
-\`\`\` It seems that two variables, duration and RMS are associated with threat level. Let's see how they differ across 3 threat levels.
+Let's look at the raw data with the actual threat level without prediction.
+
+``` r
+plot(dat,col=dat[,1])
+```
+
+![](post2_1_files/figure-markdown_github/unnamed-chunk-10-1.png)
+
+Accordign to this plot, it seems that two variables, duration and RMS are associated with threat level. Let's see how they differ across 3 threat levels.
 
 ``` r
 #violin plot
@@ -302,8 +320,6 @@ ggplot(dat,aes(x=dat$threat,y=dat[,5],fill=dat$threat))+
   theme(legend.position="none")
 ```
 
-![](post2_1_files/figure-markdown_github/unnamed-chunk-11-2.png)
-
-Both Duration and RMS tended to increase as threat level increased.
+![](post2_1_files/figure-markdown_github/unnamed-chunk-11-2.png) \#\#5. Conclusion
 
 conclusions: As the birds are in the highest level of threat, they tended to produce calls with louder decibels and longer duration. Among 4 kinds of cluster models, K-means applied on the raw data showed the highest prediction accuracy.
