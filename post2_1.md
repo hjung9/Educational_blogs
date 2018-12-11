@@ -112,17 +112,17 @@ Disadvantage of K-means:
 This is the data to be analyzed in this post.
 
 ``` r
-dat=read.csv("TUTI_post2_1210.csv",header=T)
+dat=read.csv("TUTI_post2.csv",header=T)
 head(dat)
 ```
 
     ##   threat no_notes duration disttomax    RMS peakfreq fundfreq minfreq
-    ## 1    10m        3   0.1313    0.0754 0.0047     2555     2555     947
-    ## 2    10m        3   0.1676    0.1088 0.0039     2610     2610     947
-    ## 3    10m        3   0.3657    0.2242 0.0028     2576     2761    1205
-    ## 4    10m        3   0.0490    0.1182 0.0046     2487     2487     947
-    ## 5    10m        3   0.4680    0.3853 0.0026     2564     2543    1205
-    ## 6    10m        3   0.2779    0.2053 0.0025     2539     2539     947
+    ## 1  a_10m        3   0.1313    0.0754 0.0047     2555     2555     947
+    ## 2  a_10m        3   0.1676    0.1088 0.0039     2610     2610     947
+    ## 3  a_10m        3   0.3657    0.2242 0.0028     2576     2761    1205
+    ## 4  a_10m        3   0.0490    0.1182 0.0046     2487     2487     947
+    ## 5  a_10m        3   0.4680    0.3853 0.0026     2564     2543    1205
+    ## 6  a_10m        3   0.2779    0.2053 0.0025     2539     2539     947
     ##   maxfreq entropy
     ## 1    9043   0.316
     ## 2    9043   0.343
@@ -145,17 +145,10 @@ sdat=scale(dat[,2:10])
 The order of dat\[,1\] is set as 10m,1m and 5m. Let's re-order for easier interpretation.
 
 ``` r
-print(levels(dat[,1]))
+#print(levels(dat[,1]))
+#dat[,1]=factor(dat[,1],levels(dat[,1])[c(1,3,2)])
+#print(levels(dat[,1])) 
 ```
-
-    ## [1] "10m" "1m"  "5m"
-
-``` r
-dat[,1]=factor(dat[,1],levels(dat[,1])[c(1,3,2)])
-print(levels(dat[,1])) 
-```
-
-    ## [1] "10m" "5m"  "1m"
 
 Now it is ordered as 10m, 5m and 1m. (From less threat to highest threat level.)
 
@@ -202,7 +195,9 @@ pcs1to3=data.frame(pcs$x[,1:3])#extract PC1 to PC3
 plot(pcs1to3)
 ```
 
-![](post2_1_files/figure-markdown_github/unnamed-chunk-7-1.png) This is pairwise plot of PC axis. In the next step, I will run K-means with the PC axis extracted above
+![](post2_1_files/figure-markdown_github/unnamed-chunk-7-1.png)
+
+This is pairwise plot of PC axis. In the next step, I will run K-means with the PC axis extracted above
 
 ``` r
 fit_km_pc=kmeans(pcs1to3,3)
@@ -210,7 +205,9 @@ km_pc_labels=fit_km_pc$cluster
 plot(pcs1to3,col=fit_km_pc$cluster)
 ```
 
-![](post2_1_files/figure-markdown_github/unnamed-chunk-8-1.png) It seems clusters in PC1 and PC2 show good separation.
+![](post2_1_files/figure-markdown_github/unnamed-chunk-8-1.png)
+
+It seems clusters in PC1 and PC2 show good separation.
 
 Next, let's see K-means fitted on the raw data, instead of PC axis. Of course, raw data has more variables than PC axis, so the pairwise plot should include much more plots.
 
@@ -235,40 +232,40 @@ table(hc_comp_labels,dat[,1])#confusion matrix of hierarchical clustering with c
 ```
 
     ##               
-    ## hc_comp_labels 10m  5m  1m
-    ##              1  39  59  80
-    ##              2   0   1  84
-    ##              3   0  38 114
+    ## hc_comp_labels a_10m b_5m c_1m
+    ##              1    39   59   80
+    ##              2     0    1   84
+    ##              3     0   38  114
 
 ``` r
 table(hc_sing_labels,dat[,1])#confusion matrix of hierarchical clustering with complete linkage
 ```
 
     ##               
-    ## hc_sing_labels 10m  5m  1m
-    ##              1  39  96 274
-    ##              2   0   0   3
-    ##              3   0   2   1
+    ## hc_sing_labels a_10m b_5m c_1m
+    ##              1    39   96  274
+    ##              2     0    0    3
+    ##              3     0    2    1
 
 ``` r
 table(km_pc_labels,dat[,1])#confusion matrix of K-means with PC 
 ```
 
     ##             
-    ## km_pc_labels 10m  5m  1m
-    ##            1  39  86   1
-    ##            2   0   7 233
-    ##            3   0   5  44
+    ## km_pc_labels a_10m b_5m c_1m
+    ##            1    39   86    1
+    ##            2     0    5   44
+    ##            3     0    7  233
 
 ``` r
 table(km_r_labels,dat[,1])#confusion matrix of K-means analysis on raw data
 ```
 
     ##            
-    ## km_r_labels 10m  5m  1m
-    ##           1  39  90   1
-    ##           2   0   4  41
-    ##           3   0   4 236
+    ## km_r_labels a_10m b_5m c_1m
+    ##           1    39   82    0
+    ##           2     0    4   41
+    ##           3     0   12  237
 
 It seems that k-means with raw data showed the most high accuracy. Particularly, it predicted 1m (high threat) pretty well. Hierarchical clustering with complete linkage showed less high accuracy, but hiearchical clustering with single linkage and K-means with PC axis showed the least accurate results.
 
@@ -305,6 +302,8 @@ ggplot(dat,aes(x=dat$threat,y=dat[,5],fill=dat$threat))+
   theme(legend.position="none")
 ```
 
-![](post2_1_files/figure-markdown_github/unnamed-chunk-11-2.png) Both Duration and RMS tended to increase as threat level increased.
+![](post2_1_files/figure-markdown_github/unnamed-chunk-11-2.png)
+
+Both Duration and RMS tended to increase as threat level increased.
 
 conclusions: As the birds are in the highest level of threat, they tended to produce calls with louder decibels and longer duration. Among 4 kinds of cluster models, K-means applied on the raw data showed the highest prediction accuracy.

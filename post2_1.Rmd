@@ -133,7 +133,7 @@ Disadvantage of K-means:
 
 This is the data to be analyzed in this post.
 ```{r}
-dat=read.csv("TUTI_post2_1210.csv",header=T)
+dat=read.csv("TUTI_post2.csv",header=T)
 head(dat)
 plot(dat)
 ```
@@ -145,9 +145,9 @@ sdat=scale(dat[,2:10])
 The order of dat[,1] is set as 10m,1m and 5m.
 Let's re-order for easier interpretation.
 ```{r}
-print(levels(dat[,1]))
-dat[,1]=factor(dat[,1],levels(dat[,1])[c(1,3,2)])
-print(levels(dat[,1])) 
+#print(levels(dat[,1]))
+#dat[,1]=factor(dat[,1],levels(dat[,1])[c(1,3,2)])
+#print(levels(dat[,1])) 
 ```
 Now it is ordered as 10m, 5m and 1m. (From less threat to highest threat level.)
 
@@ -189,13 +189,16 @@ pcs=prcomp(sdat,scale=F)
 pcs1to3=data.frame(pcs$x[,1:3])#extract PC1 to PC3
 plot(pcs1to3)
 ```
+
 This is pairwise plot of PC axis.
 In the next step, I will run K-means with the PC axis extracted above
+
 ```{r}
 fit_km_pc=kmeans(pcs1to3,3)
 km_pc_labels=fit_km_pc$cluster
 plot(pcs1to3,col=fit_km_pc$cluster)
 ```
+
 It seems clusters in PC1 and PC2 show good separation.
 
 Next, let's see K-means fitted on the raw data, instead of PC axis. Of course, raw data has more variables than PC axis, so the pairwise plot should include much more plots.
@@ -223,6 +226,7 @@ table(hc_sing_labels,dat[,1])#confusion matrix of hierarchical clustering with c
 table(km_pc_labels,dat[,1])#confusion matrix of K-means with PC 
 table(km_r_labels,dat[,1])#confusion matrix of K-means analysis on raw data
 ```
+
 It seems that k-means with raw data showed the most high accuracy. Particularly, it predicted 1m (high threat) pretty well. Hierarchical clustering with complete linkage showed less high accuracy, but hiearchical clustering with single linkage and K-means with PC axis showed the least accurate results.
 
 ```
@@ -250,6 +254,7 @@ ggplot(dat,aes(x=dat$threat,y=dat[,5],fill=dat$threat))+
   theme(legend.position="none")
 
 ```
+
 Both Duration and RMS tended to increase as threat level increased. 
 
 conclusions: As the birds are in the highest level of threat, they tended to produce calls with louder decibels and longer duration. Among 4 kinds of cluster models, K-means applied on the raw data showed the highest prediction accuracy.
