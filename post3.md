@@ -4,7 +4,6 @@ Hwayoung Jung
 December 2, 2018
 
 1. Purpose
-==========
 
 In this post, I will show how to build a model with variable selection methods using stepwise selection. I will generate models to predict important factors associated with house price. Variables are shown below:
 
@@ -93,7 +92,7 @@ Disadvantages: - P-values do not provide meaningful information because of the b
 Even though I excluded some variables, there are still 13 variables so it needs to go further selection process to make more simpler, accurate model. In the following analysis, I will use forward, backward and bidirectinoal selection model with different model selection criteria.
 
 4. Data analysis
-================
+
 
 4.1 Pre-processing
 ==================
@@ -746,7 +745,6 @@ errmat
     ## [20,] 0.02589888 0.3467955 0.02701766 0.3481924 0.03209962 0.3445554
 
 5. Conclusion
-=============
 
 To conclude, the important factors deciding house price turned out to be whether the house has the view of water front and overall condition of house. Therefore, rather than traits of the internal house structure such as area of livingroom, whether the house has a view of water near the house and overall condition strongly predicted house price.
 
