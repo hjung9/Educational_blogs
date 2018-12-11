@@ -4,7 +4,7 @@ Hwayoung Jung
 December 2, 2018
 
 1. Purpose
-----------
+==========
 
 In this post, I will show how to build a model with variable selection methods using stepwise selection. I will generate models to predict important factors associated with house price. Variables are shown below:
 
