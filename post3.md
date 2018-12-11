@@ -83,7 +83,7 @@ Using the model selection criteria shown above, we can conduct stepwise model se
 -   Mixed selection is a combination of forward and backward selection. The constraints of forward and backward selection is that, once variables are included, the change cannot be reversed. For example, in backward selection, if a variable is removed, then the removed variable cannot be included in the model later. In forward selection, if a variable is added, it cannot be removed. But the bidirectional selection flexibly remove a variable that was previously added and add a variable that was previously removed if the previous change does not improve the fitness of the model which is checked by model criteria value (AIC, BIC ..etc).
 
 3. Pros cons of the model
-=========================
+
 
 Advantages: - Computationally efficient and fast - Easy to interprete with smaller number of variables included in the final model
 
@@ -92,6 +92,7 @@ Disadvantages: - P-values do not provide meaningful information because of the b
 Even though I excluded some variables, there are still 13 variables so it needs to go further selection process to make more simpler, accurate model. In the following analysis, I will use forward, backward and bidirectinoal selection model with different model selection criteria.
 
 4. Data analysis
+
 
 
 4.1 Pre-processing
