@@ -6,7 +6,6 @@ December 11, 2018
 Within-note variation in Tufted titmice (*baeolophus bicolor*)
 
 1. Purpose
-==========
 
 The purpose of this post is to show how to examine presence of hidden subgroup and the subgroups match with a specific group category that is already known. I am studying the vocal behavior of Tufted titmice, commonly found species in Tennessee. The titmice produce various types of calls that convey threat information to other birds to alert them. There are 10 acoustic measurements of the titmice calls and 1 threat context. The goal of the analyses is to examine weather within-note property of D notes are associated with threat level.
 
