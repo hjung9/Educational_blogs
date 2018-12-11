@@ -52,7 +52,7 @@ In this post, I will show how to build a model with variable selection methods u
 The dataset is obtained from kaggle. (<https://www.kaggle.com/harlfoxem/housesalesprediction>).
 
 2. Overview of analysis techniques
-==================================
+
 
 2.1 Model selection criteria
 ============================
