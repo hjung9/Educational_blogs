@@ -1,7 +1,4 @@
-post3
-================
-Hwayoung Jung
-December 2, 2018
+Project proposal for Data Incubator Fellowship
 
 1. Purpose
 
