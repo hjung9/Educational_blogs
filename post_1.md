@@ -1,4 +1,4 @@
-STAT576
+
 ================
 Hwayoung Jung
 November 18, 2018
