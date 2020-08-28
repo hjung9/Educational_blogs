@@ -43,6 +43,8 @@ As you see, variables are highly correlated.
 
 The typical analysis that most first-year graduate students in Business analytics department or graduate students in other fields would be multiple regression. However, there are problems of using multiple regression in this data, because of multicollinearity. For example, 4 measurements in body size (Tarsus, Bill, wing and tail) will be all correlated. Also, laying date will be correlated with temperature because the data has been collected through early March to August. As the laying date increases, temperatures will also be increased as moving from spring to summer. To deal with this colliniearity, I used shrinkage methods that effectively reduce coefficient estimates towards zero, the ridge regression and the lasso regression.
 
+==================================
+
 2. Overview of analysis techniques
 
 ==================================
@@ -54,6 +56,8 @@ Ridge regression is an improved version of ordinary least square analysis. When 
 Lasso regression works also similarly with ordinary least square analysis. The main difference with ridge regression is that it use l2 norm and lasso regression is based on l1 norm. l2 norm means the squared value and l1 norm means the absolute value that without being squared.
 
 Elastic net is like an intermediate form between ridge and lasso because it combines ridge and lasso penalties together. Lasso rigression tends to select too small number of variables if they were highly correlated and do not produce the same variable selection. Elastic net effectively deals with this problem by considering penalties of ridge and lasso. l1 part (absolute value) select few number of variables and quadratic part stabilizes l1 part
+
+==================================
 
 3. Pros and cons of each method
 
@@ -87,15 +91,19 @@ Benefit of Elastic Net:
 
 -   Effectively compensate the limitations of lasso regression by incorporating penalites from both ridge and lasso
 
+==================================
+
 4. Data analyses
 
-================
+==================================
 
 Now let's begin to run ridge, lasso and elastic net.
 
+==================================
+
 4.1 Ridge regression
 
-====================
+==================================
 
 Let's perform ridge regression first.
 
@@ -146,8 +154,11 @@ train_mse=mean((y[train]-predicted_tr)^2)
 test_mse=mean((y[test]-predicted_ts)^2)
 ```
 
+==================================
+
 4.2 Lasso rigression
-====================
+
+==================================
 
 Now let's perform lasso regression. Since we already divided the data with training and test set, we will start from cross validation to choose the best lambda.
 
@@ -171,9 +182,11 @@ train_mse=mean((y[train]-predicted_tr)^2)
 test_mse=mean((y[test]-predicted_ts)^2)
 ```
 
+==================================
+
 4.3 Elastic net
 
-===============
+==================================
 
 Now let's perform elastic net regression. Since we already divided the data with training and test set, we will start from cross validation to choose the best lambda.
 
@@ -231,8 +244,10 @@ legend("bottomright",legend=names(dat)[1:8],col=1:8,lty=rep(1,8),cex=0.6)
 
 This is a solution path of elastic net. Note that coefficients are smoothly decreasing compared to the solution path of Lasso.
 
+==================================
+
 5. Conclusion
 
-=============
+==================================
 
 As a conclusion, the top 3 important variables in ridge regression turned out to be cs, Bill and length, length, ld and Bill in lasso, length, tail and ld in elastic net. Overall, the date of egg laying and the body size represented by bill length seem to be important factor to lay heavier eggs.
