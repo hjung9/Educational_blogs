@@ -1,13 +1,11 @@
-post2
-
-================
+===========================================
 
 Hwayoung Jung
 December 11, 2018
 
-================
+===========================================
 
-Within-note variation in Tufted titmice (*baeolophus bicolor*)
+Vocalization variation in Tufted titmice (*baeolophus bicolor*)
 
 1. Purpose
 
