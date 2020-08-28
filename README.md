@@ -1,3 +1,2 @@
-# STAT576_1
-Final portfolio
+Educational blog postings
 This is a line from Rstudio
